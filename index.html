@@ -29,12 +29,12 @@ textarea{min-height:90px;resize:vertical}button{border:0;border-radius:12px;padd
 <header><h1>📚 読書履歴</h1><div class="sub">本のISBNを読み取って、かんたん登録</div></header>
 <main>
 <section class="card">
-<h2>📷 ISBNから自動入力</h2><div class="auto-badge">NEW 第2段階</div>
+<h2>📷 ISBNから自動入力</h2><div class="auto-badge">日本語書誌を優先</div>
 <button class="scan-button" onclick="startScanner()">📷 本のバーコードを読み取る</button>
 <div id="scannerWrap"><div id="reader"></div><div class="scan-help">本の裏側にある「978」または「979」から始まるバーコードを、枠の中に入れてください。</div><button class="stop-button" onclick="stopScanner()">カメラを閉じる</button></div>
 <label for="isbn">ISBNを直接入力して検索</label>
 <div class="search-row"><input id="isbn" type="text" inputmode="numeric" placeholder="例：9784478025819"><button onclick="searchByIsbn()">検索</button></div>
-<div class="small">ハイフン入りでもOKです。</div><div id="status" class="status"></div>
+<div class="small">ハイフン入りでもOKです。日本の本はopenBDを最優先で検索します。</div><div id="status" class="status"></div>
 </section>
 
 <section class="card">
@@ -85,14 +85,42 @@ async function searchByIsbn(){
  await lookupBook(isbn)
 }
 async function lookupBook(isbn){
- showStatus(`ISBN ${isbn} の書籍情報を検索しています…`,"info");
+ showStatus(`ISBN ${isbn} の日本語書誌情報を検索しています…`,"info");
+
+ // 1. 日本の書籍は openBD を最優先
  try{
-  const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}&maxResults=1`);
-  if(r.ok){const data=await r.json();if(data.items&&data.items.length){const info=data.items[0].volumeInfo||{},title=info.title||"",authors=Array.isArray(info.authors)?info.authors.join("・"):"";let cover="";if(info.imageLinks){cover=info.imageLinks.thumbnail||info.imageLinks.smallThumbnail||"";cover=cover.replace(/^http:/,"https:")}if(title){fillBookInfo(isbn,title,authors,cover);showStatus("書籍情報が見つかりました！内容を確認して「本を登録する」を押してください。","ok");return}}}
+  const r=await fetch(`https://api.openbd.jp/v1/get?isbn=${encodeURIComponent(isbn)}`);
+  if(r.ok){
+   const data=await r.json(),book=Array.isArray(data)?data[0]:null;
+   if(book&&book.summary){
+    const s=book.summary,title=(s.title||"").trim(),author=(s.author||"").trim();
+    let cover=(s.cover||"").trim();
+    if(cover)cover=cover.replace(/^http:/,"https:");
+    if(title){fillBookInfo(isbn,title,author,cover);showStatus("日本語の書籍情報が見つかりました！内容を確認して「本を登録する」を押してください。","ok");return}
+   }
+  }
  }catch(e){}
+
+ // 2. Google Books は日本語を優先して検索
+ try{
+  const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}&langRestrict=ja&maxResults=5`);
+  if(r.ok){
+   const data=await r.json();
+   if(data.items&&data.items.length){
+    const sorted=[...data.items].sort((a,b)=>{
+     const al=(a.volumeInfo&&a.volumeInfo.language)==="ja"?1:0,bl=(b.volumeInfo&&b.volumeInfo.language)==="ja"?1:0;return bl-al
+    });
+    const info=sorted[0].volumeInfo||{},title=info.title||"",authors=Array.isArray(info.authors)?info.authors.join("・"):"";
+    let cover="";if(info.imageLinks){cover=info.imageLinks.large||info.imageLinks.medium||info.imageLinks.thumbnail||info.imageLinks.smallThumbnail||"";cover=cover.replace(/^http:/,"https:").replace("&edge=curl","")}
+    if(title){fillBookInfo(isbn,title,authors,cover);showStatus("書籍情報が見つかりました！内容を確認して「本を登録する」を押してください。","ok");return}
+   }
+  }
+ }catch(e){}
+
+ // 3. 最後に Open Library
  try{
   const r=await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${encodeURIComponent(isbn)}&format=json&jscmd=data`);
-  if(r.ok){const data=await r.json(),book=data[`ISBN:${isbn}`];if(book&&book.title){const authors=Array.isArray(book.authors)?book.authors.map(a=>a.name).filter(Boolean).join("・"):"";let cover="";if(book.cover)cover=book.cover.medium||book.cover.small||book.cover.large||"";fillBookInfo(isbn,book.title,authors,cover);showStatus("書籍情報が見つかりました！内容を確認して「本を登録する」を押してください。","ok");return}}
+  if(r.ok){const data=await r.json(),book=data[`ISBN:${isbn}`];if(book&&book.title){const authors=Array.isArray(book.authors)?book.authors.map(a=>a.name).filter(Boolean).join("・"):"";let cover="";if(book.cover)cover=book.cover.large||book.cover.medium||book.cover.small||"";fillBookInfo(isbn,book.title,authors,cover);showStatus("書籍情報が見つかりました！内容を確認して「本を登録する」を押してください。","ok");return}}
  }catch(e){}
  document.getElementById("isbn").value=isbn;showStatus("このISBNの書籍情報を自動取得できませんでした。書籍名と著者名を手動で入力して登録できます。","error")
 }
@@ -108,11 +136,11 @@ function formatDate(date){if(!date)return"読了日未設定";const p=date.split
 function renderBooks(){
  const books=getBooks(),list=document.getElementById("bookList"),count=document.getElementById("count");count.textContent=`登録冊数：${books.length}冊`;
  if(!books.length){list.innerHTML='<div class="empty">まだ本が登録されていません📖<br>バーコードから1冊登録してみましょう。</div>';return}
- list.innerHTML=books.map(book=>{const stars=Number(book.rating)>0?"⭐".repeat(Number(book.rating)):"評価なし",cover=book.coverUrl?`<img class="cover" src="${escapeHtml(book.coverUrl)}" alt="">`:`<div class="cover-placeholder">📖</div>`;return`<div class="book"><div class="book-layout">${cover}<div class="book-info"><div class="book-title">${escapeHtml(book.title)}</div><div class="author">${escapeHtml(book.author||"著者名未設定")}</div><div class="meta">📅 ${formatDate(book.date)}</div>${book.isbn?`<div class="meta">ISBN：${escapeHtml(book.isbn)}</div>`:""}<div class="stars">${stars}</div></div></div>${book.note?`<div class="note">📝 ${escapeHtml(book.note)}</div>`:""}<button class="delete" onclick="deleteBook(${Number(book.id)})">🗑️ この本を削除</button></div>`}).join("")
+ list.innerHTML=books.map(book=>{const stars=Number(book.rating)>0?"⭐".repeat(Number(book.rating)):"評価なし",cover=book.coverUrl?`<img class="cover" src="${escapeHtml(book.coverUrl)}" alt="" onerror="this.outerHTML='<div class=&quot;cover-placeholder&quot;>📖</div>'">`:`<div class="cover-placeholder">📖</div>`;return`<div class="book"><div class="book-layout">${cover}<div class="book-info"><div class="book-title">${escapeHtml(book.title)}</div><div class="author">${escapeHtml(book.author||"著者名未設定")}</div><div class="meta">📅 ${formatDate(book.date)}</div>${book.isbn?`<div class="meta">ISBN：${escapeHtml(book.isbn)}</div>`:""}<div class="stars">${stars}</div></div></div>${book.note?`<div class="note">📝 ${escapeHtml(book.note)}</div>`:""}<button class="delete" onclick="deleteBook(${Number(book.id)})">🗑️ この本を削除</button></div>`}).join("")
 }
 function escapeHtml(text){return String(text||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
-window.addEventListener("pagehide",()=>{if(scanning&&html5QrCode){try{html5QrCode.stop()}catch(e){}}});
-setToday();renderBooks();
+window.addEventListener("pagehide",()=>{if(scanning)stopScanner()});
+window.addEventListener("load",()=>{setToday();renderBooks()});
 </script>
 </body>
 </html>
