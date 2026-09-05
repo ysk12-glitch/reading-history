@@ -42,6 +42,15 @@ function normalizeIsbn(v){return String(v||'').replace(/[^0-9Xx]/g,'').toUpperCa
 function isValidIsbn13(isbn){if(!/^\d{13}$/.test(isbn))return false;let s=0;for(let i=0;i<12;i++)s+=Number(isbn[i])*(i%2===0?1:3);return((10-s%10)%10)===Number(isbn[12])}
 function showStatus(msg,type){const s=el('status');s.textContent=msg;s.className='status show '+(type||'info')}
 function cleanAuthor(a){return String(a||'').replace(/,\d{4}-?/g,'').replace(/,/g,'').trim().replace(/\s+/g,'・')}
+function cleanCoverUrl(url){return String(url||'').replace(/^http:/,'https:').replace('&edge=curl','')}
+async function findCover(isbn,preferred){
+ const p=cleanCoverUrl(preferred);if(p)return p;
+ try{
+  const r=await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+encodeURIComponent(isbn)+'&maxResults=10');
+  if(r.ok){const d=await r.json();for(const item of(d.items||[])){const links=(item.volumeInfo||{}).imageLinks||{};const c=links.extraLarge||links.large||links.medium||links.small||links.thumbnail||links.smallThumbnail||'';if(c)return cleanCoverUrl(c)}}
+ }catch(e){}
+ return 'https://covers.openlibrary.org/b/isbn/'+encodeURIComponent(isbn)+'-L.jpg?default=false';
+}
 async function startScanner(){
  if(scanning)return;
  showStatus('カメラを起動しています…','info');
@@ -60,9 +69,9 @@ async function stopScanner(){if(html5QrCode){try{if(scanning)await html5QrCode.s
 async function onScanSuccess(text){if(scanLocked)return;const isbn=normalizeIsbn(text);if(!/^(978|979)\d{10}$/.test(isbn)||!isValidIsbn13(isbn)){showStatus('ISBNバーコードをもう一度合わせてください。','error');return}scanLocked=true;el('isbn').value=isbn;await stopScanner();await lookupBook(isbn)}
 async function searchByIsbn(){const isbn=normalizeIsbn(el('isbn').value);el('isbn').value=isbn;if(!/^\d{13}$/.test(isbn)||!isValidIsbn13(isbn)){showStatus('正しい13桁のISBNを入力してください。','error');return}await lookupBook(isbn)}
 async function lookupBook(isbn){
- showStatus('書籍情報を検索しています…','info');
- try{const r=await fetch('https://api.openbd.jp/v1/get?isbn='+encodeURIComponent(isbn));if(r.ok){const d=await r.json(),b=Array.isArray(d)?d[0]:null;if(b&&b.summary&&b.summary.title){const s=b.summary;fillBookInfo(isbn,s.title,cleanAuthor(s.author),String(s.cover||'').replace(/^http:/,'https:'));showStatus('日本語の書籍情報が見つかりました！','ok');return}}}catch(e){}
- try{const r=await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+encodeURIComponent(isbn)+'&langRestrict=ja&maxResults=5');if(r.ok){const d=await r.json();if(d.items&&d.items.length){const i=d.items[0].volumeInfo||{},cover=i.imageLinks?(i.imageLinks.thumbnail||i.imageLinks.smallThumbnail||''):'';fillBookInfo(isbn,i.title||'',Array.isArray(i.authors)?i.authors.join('・'):'',String(cover).replace(/^http:/,'https:'));showStatus('書籍情報が見つかりました！','ok');return}}}catch(e){}
+ showStatus('書籍情報と表紙を検索しています…','info');
+ try{const r=await fetch('https://api.openbd.jp/v1/get?isbn='+encodeURIComponent(isbn));if(r.ok){const d=await r.json(),b=Array.isArray(d)?d[0]:null;if(b&&b.summary&&b.summary.title){const s=b.summary;const cover=await findCover(isbn,s.cover||'');fillBookInfo(isbn,s.title,cleanAuthor(s.author),cover);showStatus('日本語の書籍情報と表紙を検索しました！','ok');return}}}catch(e){}
+ try{const r=await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+encodeURIComponent(isbn)+'&langRestrict=ja&maxResults=5');if(r.ok){const d=await r.json();if(d.items&&d.items.length){const i=d.items[0].volumeInfo||{},rawCover=i.imageLinks?(i.imageLinks.extraLarge||i.imageLinks.large||i.imageLinks.medium||i.imageLinks.thumbnail||i.imageLinks.smallThumbnail||''):'';const cover=await findCover(isbn,rawCover);fillBookInfo(isbn,i.title||'',Array.isArray(i.authors)?i.authors.join('・'):'',cover);showStatus('書籍情報と表紙を検索しました！','ok');return}}}catch(e){}
  showStatus('書籍情報を自動取得できませんでした。手動入力できます。','error')
 }
 function fillBookInfo(isbn,title,author,cover){el('isbn').value=isbn;el('title').value=title||'';el('author').value=author||'';el('coverUrl').value=cover||''}
@@ -70,12 +79,14 @@ function addBook(){const title=el('title').value.trim();if(!title){alert('書籍
 function deleteBook(id){if(confirm('この本を削除しますか？')){saveBooks(getBooks().filter(b=>b.id!==id));renderBooks()}}
 function esc(t){return String(t||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
 function formatDate(d){if(!d)return'読了日未設定';const p=d.split('-');return p[0]+'年'+Number(p[1])+'月'+Number(p[2])+'日'}
-function renderBooks(){const books=getBooks();el('count').textContent='登録冊数：'+books.length+'冊';if(!books.length){el('bookList').innerHTML='<div class="empty">まだ本が登録されていません📖</div>';return}el('bookList').innerHTML=books.map(b=>{const cover=b.coverUrl?'<img class="cover" src="'+esc(b.coverUrl)+'" alt="">':'<div class="cover-placeholder">📖</div>';const stars=Number(b.rating)>0?'⭐'.repeat(Number(b.rating)):'評価なし';return'<div class="book"><div class="book-layout">'+cover+'<div class="book-info"><div class="book-title">'+esc(b.title)+'</div><div class="author">'+esc(b.author||'著者名未設定')+'</div><div class="meta">📅 '+formatDate(b.date)+'</div>'+(b.isbn?'<div class="meta">ISBN：'+esc(b.isbn)+'</div>':'')+'<div class="stars">'+stars+'</div></div></div>'+(b.note?'<div class="note">📝 '+esc(b.note)+'</div>':'')+'<button class="delete" onclick="deleteBook('+Number(b.id)+')">🗑️ この本を削除</button></div>'}).join('')}
+function coverHtml(b){if(!b.coverUrl)return'<div class="cover-placeholder">📖</div>';return'<img class="cover" src="'+esc(b.coverUrl)+'" alt="'+esc(b.title)+'の表紙" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="cover-placeholder" style="display:none">📖</div>'}
+function renderBooks(){const books=getBooks();el('count').textContent='登録冊数：'+books.length+'冊';if(!books.length){el('bookList').innerHTML='<div class="empty">まだ本が登録されていません📖</div>';return}el('bookList').innerHTML=books.map(b=>{const cover=coverHtml(b);const stars=Number(b.rating)>0?'⭐'.repeat(Number(b.rating)):'評価なし';return'<div class="book"><div class="book-layout">'+cover+'<div class="book-info"><div class="book-title">'+esc(b.title)+'</div><div class="author">'+esc(b.author||'著者名未設定')+'</div><div class="meta">📅 '+formatDate(b.date)+'</div>'+(b.isbn?'<div class="meta">ISBN：'+esc(b.isbn)+'</div>':'')+'<div class="stars">'+stars+'</div></div></div>'+(b.note?'<div class="note">📝 '+esc(b.note)+'</div>':'')+'<button class="delete" onclick="deleteBook('+Number(b.id)+')">🗑️ この本を削除</button></div>'}).join('')}
+async function backfillMissingCovers(){const books=getBooks();let changed=false;for(const b of books){if(!b.coverUrl&&b.isbn){const c=await findCover(b.isbn,'');if(c){b.coverUrl=c;changed=true}}}if(changed){saveBooks(books);renderBooks()}}
 el('scanButton').addEventListener('click',startScanner);
 el('stopButton').addEventListener('click',stopScanner);
 el('searchButton').addEventListener('click',searchByIsbn);
 el('addButton').addEventListener('click',addBook);
-setToday();renderBooks();
+setToday();renderBooks();backfillMissingCovers();
 </script>
 </body>
 </html>
