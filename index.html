@@ -6,63 +6,76 @@
 <title>読書履歴</title>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;background:#f5f5f7;color:#222}header{background:rgba(255,255,255,.95);padding:22px 18px 16px;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}h1{margin:0;font-size:25px}h2{margin-top:0;font-size:21px}.sub{color:#777;font-size:13px;margin-top:5px}main{max-width:700px;margin:auto;padding:16px 16px max(30px,env(safe-area-inset-bottom))}.card{background:white;border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}label{display:block;font-weight:600;margin:12px 0 6px}input,textarea,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:16px;background:white}textarea{min-height:90px;resize:vertical}button{border:0;border-radius:12px;padding:13px 16px;font-size:16px;font-weight:650;cursor:pointer}.primary{width:100%;margin-top:16px;background:#222;color:white}.scan-button{width:100%;background:#2f6fed;color:white;margin-top:4px}.stop-button{width:100%;background:#eee;color:#333;margin-top:8px}.search-row{display:flex;gap:8px}.search-row input{flex:1}.search-row button{white-space:nowrap;background:#e9eefb;color:#2457b8}#scannerWrap{display:none;margin-top:14px}#reader{width:100%;min-height:220px;background:#111;overflow:hidden;border-radius:14px}.scan-help{color:#666;font-size:13px;line-height:1.5;margin-top:9px}.status{display:none;margin-top:12px;padding:11px;border-radius:10px;font-size:14px;line-height:1.5;word-break:break-word}.status.show{display:block}.status.info{background:#eef4ff;color:#2457b8}.status.ok{background:#edf8f0;color:#23663a}.status.error{background:#fff0f0;color:#a23636}.auto-badge{display:inline-block;font-size:12px;font-weight:650;background:#eef4ff;color:#2457b8;border-radius:999px;padding:5px 9px;margin-bottom:12px}.book{border-top:1px solid #eee;padding:16px 0}.book:first-child{border-top:0;padding-top:0}.book-layout{display:flex;gap:13px;align-items:flex-start}.cover,.cover-placeholder{width:72px;min-width:72px;aspect-ratio:2/3;border-radius:7px;background:#eee}.cover{object-fit:cover}.cover-placeholder{display:flex;align-items:center;justify-content:center;font-size:27px}.book-info{min-width:0;flex:1}.book-title{font-size:18px;font-weight:700;line-height:1.35}.author{color:#666;margin-top:4px}.meta{margin-top:7px;font-size:13px;color:#666}.stars{margin-top:4px;font-size:18px;letter-spacing:1px}.note{margin-top:10px;white-space:pre-wrap;color:#444;line-height:1.5;font-size:14px}.delete{margin-top:10px;background:#eee;color:#555;font-size:13px;padding:9px 12px}.empty{text-align:center;color:#888;padding:20px 0 8px;line-height:1.7}.count{font-size:14px;color:#777;margin-bottom:10px}.small{font-size:12px;color:#888;margin-top:6px}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;background:#f5f5f7;color:#222}header{background:rgba(255,255,255,.95);padding:22px 18px 16px;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}h1{margin:0;font-size:25px}h2{margin-top:0;font-size:21px}.sub{color:#777;font-size:13px;margin-top:5px}main{max-width:700px;margin:auto;padding:16px 16px max(30px,env(safe-area-inset-bottom))}.card{background:#fff;border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}label{display:block;font-weight:600;margin:12px 0 6px}input,textarea,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:16px;background:#fff}textarea{min-height:90px;resize:vertical}button{border:0;border-radius:12px;padding:13px 16px;font-size:16px;font-weight:650}.primary{width:100%;margin-top:16px;background:#222;color:#fff}.scan-button{width:100%;background:#2f6fed;color:#fff;margin-top:4px}.stop-button{width:100%;background:#eee;color:#333;margin-top:8px}.search-row{display:flex;gap:8px}.search-row input{flex:1}.search-row button{white-space:nowrap;background:#e9eefb;color:#2457b8}#scannerWrap{display:none;margin-top:14px}#reader{width:100%;background:#111;overflow:hidden;border-radius:14px}.scan-help{color:#666;font-size:13px;line-height:1.5;margin-top:9px}.status{display:none;margin-top:12px;padding:11px;border-radius:10px;font-size:14px;line-height:1.5}.status.show{display:block}.status.info{background:#eef4ff;color:#2457b8}.status.ok{background:#edf8f0;color:#23663a}.status.error{background:#fff0f0;color:#a23636}.auto-badge{display:inline-block;font-size:12px;font-weight:650;background:#eef4ff;color:#2457b8;border-radius:999px;padding:5px 9px;margin-bottom:12px}.book{border-top:1px solid #eee;padding:16px 0}.book:first-child{border-top:0;padding-top:0}.book-layout{display:flex;gap:13px;align-items:flex-start}.cover,.cover-placeholder{width:72px;min-width:72px;aspect-ratio:2/3;border-radius:7px;background:#eee}.cover{object-fit:cover}.cover-placeholder{display:flex;align-items:center;justify-content:center;font-size:27px}.book-info{min-width:0;flex:1}.book-title{font-size:18px;font-weight:700;line-height:1.35}.author{color:#666;margin-top:4px}.meta{margin-top:7px;font-size:13px;color:#666}.stars{margin-top:4px;font-size:18px}.note{margin-top:10px;white-space:pre-wrap;color:#444;line-height:1.5;font-size:14px}.delete{margin-top:10px;background:#eee;color:#555;font-size:13px;padding:9px 12px}.empty{text-align:center;color:#888;padding:20px 0 8px;line-height:1.7}.count{font-size:14px;color:#777;margin-bottom:10px}.small{font-size:12px;color:#888;margin-top:6px}
 </style>
 </head>
 <body>
 <header><h1>📚 読書履歴</h1><div class="sub">本のISBNを読み取って、かんたん登録</div></header>
 <main>
-<section class="card"><h2>📷 ISBNから自動入力</h2><div class="auto-badge">日本語書誌を優先</div><button class="scan-button" id="scanButton" onclick="startScanner()">📷 本のバーコードを読み取る</button><div id="scannerWrap"><div id="reader"></div><div class="scan-help">本の裏側にある「978」または「979」から始まるバーコードを、枠の中に入れてください。</div><button class="stop-button" onclick="stopScanner()">カメラを閉じる</button></div><label for="isbn">ISBNを直接入力して検索</label><div class="search-row"><input id="isbn" type="text" inputmode="numeric" placeholder="例：9784478025819"><button onclick="searchByIsbn()">検索</button></div><div class="small">ハイフン入りでもOKです。日本の本はopenBDを最優先で検索します。</div><div id="status" class="status"></div></section>
-<section class="card"><h2>📖 本を登録</h2><label for="title">書籍名</label><input id="title" type="text" placeholder="ISBN検索すると自動入力されます"><label for="author">著者名</label><input id="author" type="text" placeholder="ISBN検索すると自動入力されます"><input id="coverUrl" type="hidden"><label for="date">読了日</label><input id="date" type="date"><label for="rating">評価</label><select id="rating"><option value="0">評価なし</option><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select><label for="note">感想・メモ</label><textarea id="note" placeholder="印象に残ったことなど"></textarea><button class="primary" onclick="addBook()">＋ 本を登録する</button></section>
+<section class="card">
+<h2>📷 ISBNから自動入力</h2><div class="auto-badge">日本語書誌を優先</div>
+<button class="scan-button" id="scanButton">📷 本のバーコードを読み取る</button>
+<div id="scannerWrap"><div id="reader"></div><div class="scan-help">本の裏側にある「978」または「979」から始まるバーコードを枠の中に入れてください。</div><button class="stop-button" id="stopButton">カメラを閉じる</button></div>
+<label for="isbn">ISBNを直接入力して検索</label><div class="search-row"><input id="isbn" type="text" inputmode="numeric" placeholder="例：9784478025819"><button id="searchButton">検索</button></div>
+<div class="small">ハイフン入りでもOKです。</div><div id="status" class="status"></div>
+</section>
+<section class="card">
+<h2>📖 本を登録</h2>
+<label for="title">書籍名</label><input id="title" type="text" placeholder="ISBN検索すると自動入力されます">
+<label for="author">著者名</label><input id="author" type="text" placeholder="ISBN検索すると自動入力されます">
+<input id="coverUrl" type="hidden">
+<label for="date">読了日</label><input id="date" type="date">
+<label for="rating">評価</label><select id="rating"><option value="0">評価なし</option><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select>
+<label for="note">感想・メモ</label><textarea id="note" placeholder="印象に残ったことなど"></textarea>
+<button class="primary" id="addButton">＋ 本を登録する</button>
+</section>
 <section class="card"><h2>📚 読書履歴</h2><div id="count" class="count"></div><div id="bookList"></div></section>
 </main>
 <script>
-const STORAGE_KEY="reading_history_v1";let html5QrCode=null,scanning=false,scanLocked=false;
-function getBooks(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]}catch{return[]}}
-function saveBooks(books){localStorage.setItem(STORAGE_KEY,JSON.stringify(books))}
-function setToday(){const d=new Date(),yyyy=d.getFullYear(),mm=String(d.getMonth()+1).padStart(2,"0"),dd=String(d.getDate()).padStart(2,"0");document.getElementById("date").value=`${yyyy}-${mm}-${dd}`}
-function normalizeIsbn(value){return String(value||"").replace(/[^0-9Xx]/g,"").toUpperCase()}
-function isValidIsbn13(isbn){if(!/^\d{13}$/.test(isbn))return false;let sum=0;for(let i=0;i<12;i++)sum+=Number(isbn[i])*(i%2===0?1:3);return((10-(sum%10))%10)===Number(isbn[12])}
-function showStatus(message,type="info"){const el=document.getElementById("status");el.textContent=message;el.className=`status show ${type}`}
-function cleanJapaneseAuthor(author){let a=String(author||"").trim();if(!a)return"";a=a.replace(/,\d{4}-?/g,"").replace(/,/g,"").trim().replace(/\s+/g,"・");return a}
-async function findCover(isbn,preferred=""){if(preferred)return preferred;try{const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}&maxResults=5`);if(r.ok){const d=await r.json();for(const item of(d.items||[])){const links=(item.volumeInfo||{}).imageLinks||{};let c=links.large||links.medium||links.thumbnail||links.smallThumbnail||"";if(c)return c.replace(/^http:/,"https:").replace("&edge=curl","")}}}catch(e){}return""}
+const STORAGE_KEY='reading_history_v1';
+let html5QrCode=null,scanning=false,scanLocked=false;
+function el(id){return document.getElementById(id)}
+function getBooks(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]}catch(e){return[]}}
+function saveBooks(v){localStorage.setItem(STORAGE_KEY,JSON.stringify(v))}
+function setToday(){const d=new Date();el('date').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function normalizeIsbn(v){return String(v||'').replace(/[^0-9Xx]/g,'').toUpperCase()}
+function isValidIsbn13(isbn){if(!/^\d{13}$/.test(isbn))return false;let s=0;for(let i=0;i<12;i++)s+=Number(isbn[i])*(i%2===0?1:3);return((10-s%10)%10)===Number(isbn[12])}
+function showStatus(msg,type){const s=el('status');s.textContent=msg;s.className='status show '+(type||'info')}
+function cleanAuthor(a){return String(a||'').replace(/,\d{4}-?/g,'').replace(/,/g,'').trim().replace(/\s+/g,'・')}
 async function startScanner(){
  if(scanning)return;
- const btn=document.getElementById("scanButton");
- btn.disabled=true;
- showStatus("カメラを起動しています…","info");
- document.getElementById("scannerWrap").style.display="block";
- scanLocked=false;
+ showStatus('カメラを起動しています…','info');
+ el('scannerWrap').style.display='block';
  try{
-  if(typeof Html5Qrcode==="undefined")throw new Error("バーコード読み取りライブラリを読み込めませんでした");
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error("このSafariではカメラ機能を利用できません");
-  try{const test=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});test.getTracks().forEach(t=>t.stop())}catch(permissionErr){throw permissionErr}
-  html5QrCode=new Html5Qrcode("reader",{formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13],verbose:false});
-  let cameras=[];try{cameras=await Html5Qrcode.getCameras()}catch(e){}
-  let cameraConfig={facingMode:"environment"};
-  if(cameras.length){const back=cameras.find(c=>/back|rear|environment|背面/i.test(c.label));if(back)cameraConfig={deviceId:{exact:back.id}}}
-  await html5QrCode.start(cameraConfig,{fps:10,qrbox:{width:280,height:120}},onScanSuccess,()=>{});
-  scanning=true;showStatus("カメラ起動OK！ISBNバーコードを枠に合わせてください。","ok")
+  if(typeof Html5Qrcode==='undefined')throw new Error('読み取り機能を読み込めませんでした');
+  html5QrCode=new Html5Qrcode('reader',{formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13],verbose:false});
+  await html5QrCode.start({facingMode:'environment'},{fps:10,qrbox:function(w,h){return{width:Math.floor(w*.88),height:Math.min(150,Math.floor(h*.4))}},aspectRatio:1.777778},onScanSuccess,function(){});
+  scanning=true;scanLocked=false;showStatus('カメラ起動OK！ISBNバーコードを枠に合わせてください。','ok');
  }catch(err){
-  scanning=false;html5QrCode=null;document.getElementById("scannerWrap").style.display="none";
-  const name=err&&err.name?err.name:"Error",msg=err&&err.message?err.message:String(err||"");
-  let guide="";
-  if(name==="NotAllowedError"||/permission|許可/i.test(msg))guide=" SafariのWebサイト設定でカメラを『許可』にしてください。";
-  else if(name==="NotFoundError"||name==="OverconstrainedError")guide=" 利用できるカメラが見つかりませんでした。";
-  else if(name==="NotReadableError"||name==="AbortError")guide=" 他のアプリがカメラを使用している可能性があります。Safariを開き直してみてください。";
-  showStatus(`カメラを起動できませんでした。${guide}（${name}${msg?": "+msg:""}）`,"error")
- }finally{btn.disabled=false}
+  scanning=false;html5QrCode=null;el('scannerWrap').style.display='none';
+  showStatus('カメラを起動できませんでした：'+(err&&err.name?err.name:'')+' '+(err&&err.message?err.message:String(err||'')),'error');
+ }
 }
-async function stopScanner(){if(html5QrCode){try{if(scanning)await html5QrCode.stop();await html5QrCode.clear()}catch(e){}}html5QrCode=null;scanning=false;scanLocked=false;document.getElementById("scannerWrap").style.display="none"}
-async function onScanSuccess(decodedText){if(scanLocked)return;const isbn=normalizeIsbn(decodedText);if(!/^(978|979)\d{10}$/.test(isbn)){showStatus("ISBNではないバーコードを読み取りました。978または979から始まる方を読み取ってください。","error");return}if(!isValidIsbn13(isbn)){showStatus("ISBNの読み取り結果を確認できませんでした。もう一度バーコードを合わせてください。","error");return}scanLocked=true;document.getElementById("isbn").value=isbn;showStatus(`ISBN ${isbn} を読み取りました。書籍情報を検索しています…`,"info");await stopScanner();await lookupBook(isbn)}
-async function searchByIsbn(){const isbn=normalizeIsbn(document.getElementById("isbn").value);document.getElementById("isbn").value=isbn;if(!/^\d{13}$/.test(isbn)){showStatus("13桁のISBNを入力してください。","error");return}if(!/^(978|979)/.test(isbn)){showStatus("978または979から始まるISBNを入力してください。","error");return}if(!isValidIsbn13(isbn)){showStatus("ISBNの数字が正しくないようです。入力内容を確認してください。","error");return}await lookupBook(isbn)}
-async function lookupBook(isbn){showStatus(`ISBN ${isbn} の日本語書誌情報を検索しています…`,"info");try{const r=await fetch(`https://api.openbd.jp/v1/get?isbn=${encodeURIComponent(isbn)}`);if(r.ok){const data=await r.json(),book=Array.isArray(data)?data[0]:null;if(book&&book.summary){const s=book.summary,title=(s.title||"").trim(),author=cleanJapaneseAuthor(s.author||"");let cover=(s.cover||"").trim();if(cover)cover=cover.replace(/^http:/,"https:");if(title){cover=await findCover(isbn,cover);fillBookInfo(isbn,title,author,cover);showStatus("日本語の書籍情報が見つかりました！内容を確認して「本を登録する」を押してください。","ok");return}}}}catch(e){}try{const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}&langRestrict=ja&maxResults=5`);if(r.ok){const data=await r.json();if(data.items&&data.items.length){const info=data.items[0].volumeInfo||{},title=info.title||"",authors=Array.isArray(info.authors)?info.authors.join("・"):"";let cover="";if(info.imageLinks){cover=info.imageLinks.large||info.imageLinks.medium||info.imageLinks.thumbnail||info.imageLinks.smallThumbnail||"";cover=cover.replace(/^http:/,"https:").replace("&edge=curl","")}if(title){fillBookInfo(isbn,title,authors,cover);showStatus("書籍情報が見つかりました！内容を確認して「本を登録する」を押してください。","ok");return}}}}catch(e){}showStatus("このISBNの書籍情報を自動取得できませんでした。書籍名と著者名を手動で入力して登録できます。","error")}
-function fillBookInfo(isbn,title,author,cover){document.getElementById("isbn").value=isbn;document.getElementById("title").value=title||"";document.getElementById("author").value=author||"";document.getElementById("coverUrl").value=cover||"";setTimeout(()=>document.getElementById("title").scrollIntoView({behavior:"smooth",block:"center"}),150)}
-function addBook(){const isbn=normalizeIsbn(document.getElementById("isbn").value),title=document.getElementById("title").value.trim(),author=document.getElementById("author").value.trim(),date=document.getElementById("date").value,rating=Number(document.getElementById("rating").value),note=document.getElementById("note").value.trim(),coverUrl=document.getElementById("coverUrl").value.trim();if(!title){alert("書籍名を入力してください。");return}const books=getBooks();books.unshift({id:Date.now(),isbn,title,author,date,rating,note,coverUrl});saveBooks(books);document.getElementById("isbn").value="";document.getElementById("title").value="";document.getElementById("author").value="";document.getElementById("note").value="";document.getElementById("rating").value="0";document.getElementById("coverUrl").value="";setToday();renderBooks();showStatus("本を登録しました！次の本もバーコードから追加できます。","ok");document.getElementById("bookList").scrollIntoView({behavior:"smooth",block:"start")}
-function deleteBook(id){if(!confirm("この本を削除しますか？"))return;saveBooks(getBooks().filter(book=>book.id!==id));renderBooks()}
-function formatDate(date){if(!date)return"読了日未設定";const p=date.split("-");return`${p[0]}年${Number(p[1])}月${Number(p[2])}日`}
-function renderBooks(){const books=getBooks(),list=document.getElementById("bookList"),count=document.getElementById("count");count.textContent=`登録冊数：${books.length}冊`;if(!books.length){list.innerHTML='<div class="empty">まだ本が登録されていません📖<br>バーコードから1冊登録してみましょう。</div>';return}list.innerHTML=books.map(book=>{const stars=Number(book.rating)>0?"⭐".repeat(Number(book.rating)):"評価なし";const cover=book.coverUrl?`<img class="cover" src="${escapeHtml(book.coverUrl)}" alt="表紙">`:`<div class="cover-placeholder">📖</div>`;return`<div class="book"><div class="book-layout">${cover}<div class="book-info"><div class="book-title">${escapeHtml(book.title)}</div><div class="author">${escapeHtml(book.author||"著者名未設定")}</div><div class="meta">📅 ${formatDate(book.date)}</div>${book.isbn?`<div class="meta">ISBN：${escapeHtml(book.isbn)}</div>`:""}<div class="stars">${stars}</div></div></div>${book.note?`<div class="note">📝 ${escapeHtml(book.note)}</div>`:""}<button class="delete" onclick="deleteBook(${Number(book.id)})">🗑️ この本を削除</button></div>`}).join("")}
-function escapeHtml(text){return String(text||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
-window.addEventListener("pagehide",()=>{if(scanning)stopScanner()});window.addEventListener("load",()=>{setToday();renderBooks()});
+async function stopScanner(){if(html5QrCode){try{if(scanning)await html5QrCode.stop();await html5QrCode.clear()}catch(e){}}html5QrCode=null;scanning=false;scanLocked=false;el('scannerWrap').style.display='none'}
+async function onScanSuccess(text){if(scanLocked)return;const isbn=normalizeIsbn(text);if(!/^(978|979)\d{10}$/.test(isbn)||!isValidIsbn13(isbn)){showStatus('ISBNバーコードをもう一度合わせてください。','error');return}scanLocked=true;el('isbn').value=isbn;await stopScanner();await lookupBook(isbn)}
+async function searchByIsbn(){const isbn=normalizeIsbn(el('isbn').value);el('isbn').value=isbn;if(!/^\d{13}$/.test(isbn)||!isValidIsbn13(isbn)){showStatus('正しい13桁のISBNを入力してください。','error');return}await lookupBook(isbn)}
+async function lookupBook(isbn){
+ showStatus('書籍情報を検索しています…','info');
+ try{const r=await fetch('https://api.openbd.jp/v1/get?isbn='+encodeURIComponent(isbn));if(r.ok){const d=await r.json(),b=Array.isArray(d)?d[0]:null;if(b&&b.summary&&b.summary.title){const s=b.summary;fillBookInfo(isbn,s.title,cleanAuthor(s.author),String(s.cover||'').replace(/^http:/,'https:'));showStatus('日本語の書籍情報が見つかりました！','ok');return}}}catch(e){}
+ try{const r=await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+encodeURIComponent(isbn)+'&langRestrict=ja&maxResults=5');if(r.ok){const d=await r.json();if(d.items&&d.items.length){const i=d.items[0].volumeInfo||{},cover=i.imageLinks?(i.imageLinks.thumbnail||i.imageLinks.smallThumbnail||''):'';fillBookInfo(isbn,i.title||'',Array.isArray(i.authors)?i.authors.join('・'):'',String(cover).replace(/^http:/,'https:'));showStatus('書籍情報が見つかりました！','ok');return}}}catch(e){}
+ showStatus('書籍情報を自動取得できませんでした。手動入力できます。','error')
+}
+function fillBookInfo(isbn,title,author,cover){el('isbn').value=isbn;el('title').value=title||'';el('author').value=author||'';el('coverUrl').value=cover||''}
+function addBook(){const title=el('title').value.trim();if(!title){alert('書籍名を入力してください。');return}const books=getBooks();books.unshift({id:Date.now(),isbn:normalizeIsbn(el('isbn').value),title:title,author:el('author').value.trim(),date:el('date').value,rating:Number(el('rating').value),note:el('note').value.trim(),coverUrl:el('coverUrl').value.trim()});saveBooks(books);el('isbn').value='';el('title').value='';el('author').value='';el('note').value='';el('rating').value='0';el('coverUrl').value='';setToday();renderBooks();showStatus('本を登録しました！','ok')}
+function deleteBook(id){if(confirm('この本を削除しますか？')){saveBooks(getBooks().filter(b=>b.id!==id));renderBooks()}}
+function esc(t){return String(t||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
+function formatDate(d){if(!d)return'読了日未設定';const p=d.split('-');return p[0]+'年'+Number(p[1])+'月'+Number(p[2])+'日'}
+function renderBooks(){const books=getBooks();el('count').textContent='登録冊数：'+books.length+'冊';if(!books.length){el('bookList').innerHTML='<div class="empty">まだ本が登録されていません📖</div>';return}el('bookList').innerHTML=books.map(b=>{const cover=b.coverUrl?'<img class="cover" src="'+esc(b.coverUrl)+'" alt="">':'<div class="cover-placeholder">📖</div>';const stars=Number(b.rating)>0?'⭐'.repeat(Number(b.rating)):'評価なし';return'<div class="book"><div class="book-layout">'+cover+'<div class="book-info"><div class="book-title">'+esc(b.title)+'</div><div class="author">'+esc(b.author||'著者名未設定')+'</div><div class="meta">📅 '+formatDate(b.date)+'</div>'+(b.isbn?'<div class="meta">ISBN：'+esc(b.isbn)+'</div>':'')+'<div class="stars">'+stars+'</div></div></div>'+(b.note?'<div class="note">📝 '+esc(b.note)+'</div>':'')+'<button class="delete" onclick="deleteBook('+Number(b.id)+')">🗑️ この本を削除</button></div>'}).join('')}
+el('scanButton').addEventListener('click',startScanner);
+el('stopButton').addEventListener('click',stopScanner);
+el('searchButton').addEventListener('click',searchByIsbn);
+el('addButton').addEventListener('click',addBook);
+setToday();renderBooks();
 </script>
-</body></html>
+</body>
+</html>
