@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>表紙診断</title>
+<style>
+body{margin:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;color:#222}
+main{max-width:680px;margin:auto;padding:18px}
+.card{background:white;border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 8px #0000000f}
+h1{font-size:24px;margin:0 0 8px}.sub{color:#666;font-size:14px;line-height:1.5}
+input,button{width:100%;font-size:16px;padding:13px;border-radius:10px;box-sizing:border-box}
+input{border:1px solid #ccc;margin:8px 0}button{border:0;background:#2f6fed;color:#fff;font-weight:700;margin-top:8px}
+.test{margin-top:14px;padding-top:14px;border-top:1px solid #eee}.label{font-weight:700;margin-bottom:6px}.url{font-size:12px;word-break:break-all;color:#666;background:#f5f5f7;padding:8px;border-radius:8px}
+.result{margin-top:8px;padding:10px;border-radius:9px;font-size:14px}.wait{background:#eef4ff;color:#2457b8}.ok{background:#edf8f0;color:#23663a}.ng{background:#fff0f0;color:#a23636}
+.preview{display:block;max-width:180px;max-height:260px;margin:12px auto 0;border-radius:8px;background:#eee}
+.link{display:block;text-align:center;margin-top:10px;color:#2457b8;font-weight:600}
+</style>
+</head>
+<body><main>
+<div class="card">
+<h1>🧪 表紙画像 診断 v1</h1>
+<div class="sub">SafariからBooks.or.jpの表紙画像を直接表示できるかだけを確認します。読書履歴データやカメラには触れません。</div>
+<label>ISBN</label>
+<input id="isbn" inputmode="numeric" value="9784534061119">
+<button id="run">このISBNを診断する</button>
+</div>
+<div class="card" id="results"></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function norm(v){return String(v||'').replace(/\D/g,'')}
+function row(title,url,mode){
+  const id='r'+Math.random().toString(36).slice(2);
+  return `<div class="test"><div class="label">${title}</div><div class="url">${url}</div><div id="${id}" class="result wait">読み込み中…</div><img id="${id}img" class="preview" style="display:none"><a class="link" href="${url}" target="_blank" rel="noopener noreferrer">画像URLをSafariで直接開く</a></div>`;
+}
+async function testOne(baseId,url,noRef){
+  return new Promise(resolve=>{
+    const box=$(baseId),img=$(baseId+'img');
+    let done=false;
+    const finish=(ok,msg)=>{if(done)return;done=true;clearTimeout(timer);box.className='result '+(ok?'ok':'ng');box.textContent=msg;if(ok)img.style.display='block';resolve(ok)};
+    const timer=setTimeout(()=>finish(false,'❌ 10秒以内に読み込めませんでした'),10000);
+    if(noRef)img.referrerPolicy='no-referrer';
+    img.onload=()=>finish(true,`✅ 読み込み成功（${img.naturalWidth}×${img.naturalHeight}px）`);
+    img.onerror=()=>finish(false,'❌ 画像の読み込みエラー');
+    img.src=url+'?diag='+Date.now();
+  })
+}
+async function run(){
+  const isbn=norm($('isbn').value);
+  if(isbn.length!==13){$('results').innerHTML='<div class="result ng">13桁のISBNを入力してください。</div>';return}
+  const books=`https://thumbnail-s.images.books.or.jp/${isbn}.jpg`;
+  const diamond=`https://www.diamond.co.jp/images/book/${isbn.slice(-1)}/${isbn}.jpg`;
+  const ids=['normal','noref','diamond'];
+  $('results').innerHTML=`<div class="sub">結果をスクリーンショットで送ってください。特に「直接開く」を押した時に画像が見えるかが重要です。</div>`+
+    `<div class="test"><div class="label">① Books.or.jp 通常</div><div class="url">${books}</div><div id="normal" class="result wait">読み込み中…</div><img id="normalimg" class="preview" style="display:none"><a class="link" href="${books}" target="_blank" rel="noopener noreferrer">① 画像URLをSafariで直接開く</a></div>`+
+    `<div class="test"><div class="label">② Books.or.jp no-referrer</div><div class="url">${books}</div><div id="noref" class="result wait">読み込み中…</div><img id="norefimg" class="preview" style="display:none"><a class="link" href="${books}" target="_blank" rel="noopener noreferrer">② 画像URLをSafariで直接開く</a></div>`+
+    `<div class="test"><div class="label">③ ダイヤモンド社方式（比較用）</div><div class="url">${diamond}</div><div id="diamond" class="result wait">読み込み中…</div><img id="diamondimg" class="preview" style="display:none"><a class="link" href="${diamond}" target="_blank" rel="noopener noreferrer">③ 画像URLをSafariで直接開く</a></div>`;
+  testOne('normal',books,false);
+  testOne('noref',books,true);
+  testOne('diamond',diamond,true);
+}
+$('run').onclick=run;
+run();
+</script>
+</body></html>
